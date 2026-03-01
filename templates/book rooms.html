@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Room</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='hotel-luxury.css') }}">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>Book Room {{ room.room_number }}</h2>
+
+    <form method="POST">
+        <div class="mb-3">
+            <label>Customer</label>
+            <select name="customer_id" class="form-control" required>
+                {% for customer in customers %}
+                <option value="{{ customer.customer_id }}">
+                    {{ customer.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Check-in Date</label>
+            <input type="date" name="check_in" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Check-out Date</label>
+            <input type="date" name="check_out" class="form-control" required>
+        </div>
+
+        <button class="btn btn-success">Confirm Booking</button>
+        <a href="/view-rooms" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+</body>
+</html>

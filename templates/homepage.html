@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Aakaya – Kashmir</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: #000; }
+
+    /* ── VIDEO BACKGROUND ── */
+    .video-bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+    }
+    .video-bg video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: brightness(0.42) saturate(0.85);
+    }
+
+    /* ── OVERLAYS ── */
+    .vignette {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+    }
+    .corner {
+      position: fixed; width: 48px; height: 48px;
+      border-color: rgba(201,168,76,0.5); border-style: solid;
+      z-index: 5; pointer-events: none;
+    }
+    .c-tl { top:24px; left:24px; border-width:1px 0 0 1px; }
+    .c-tr { top:24px; right:24px; border-width:1px 1px 0 0; }
+    .c-bl { bottom:24px; left:24px; border-width:0 0 1px 1px; }
+    .c-br { bottom:24px; right:24px; border-width:0 1px 1px 0; }
+    .hline {
+      position: fixed; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.45), transparent);
+      z-index: 5; pointer-events: none;
+    }
+    .hline-top { top: 52px; }
+    .hline-bot { bottom: 52px; }
+
+    /* ── MAIN LAYOUT ── */
+    .layout {
+      position: relative; z-index: 10;
+      width: 100%; height: 100vh;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 7vw; gap: 40px;
+    }
+
+    /* ── LEFT BRANDING ── */
+    .branding {
+      flex: 1;
+      opacity: 0; transform: translateY(24px);
+      animation: riseIn 1.4s cubic-bezier(.22,1,.36,1) 0.4s forwards;
+    }
+    .crown-icon {
+      font-size: 36px; color: #c9a84c; display: block; margin-bottom: 16px;
+      filter: drop-shadow(0 0 20px rgba(201,168,76,0.6));
+      animation: float 3.5s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+
+    .est-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px; font-weight: 500; letter-spacing: .4em;
+      color: #c9a84c; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .hotel-word {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px,2.2vw,28px); font-weight: 300;
+      letter-spacing: .55em; color: rgba(255,255,255,0.65);
+      text-transform: uppercase;
+    }
+    .hotel-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(60px,9vw,118px); font-weight: 300;
+      letter-spacing: .1em; line-height: .9; color: #fff;
+      text-shadow: 0 2px 40px rgba(0,0,0,0.8);
+    }
+    .hotel-name em { font-style: italic; color: #c9a84c; text-shadow: 0 0 40px rgba(201,168,76,0.4); }
+    .tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic; font-size: 15px;
+      color: rgba(255,255,255,0.4); margin-top: 18px; letter-spacing: .1em;
+    }
+    .gold-rule {
+      width: 0; height: 1px; margin: 22px 0;
+      background: linear-gradient(90deg, #c9a84c, transparent);
+      animation: growLine 1.6s ease 1s forwards;
+    }
+    @keyframes growLine { to { width: 180px; } }
+    .amenities { display: flex; gap: 24px; flex-wrap: wrap; }
+    .amenity {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px; letter-spacing: .2em;
+      color: rgba(255,255,255,0.3); text-transform: uppercase;
+    }
+
+    /* ── RIGHT LOGIN ── */
+    .login-panel {
+      width: 340px;
+      background: rgba(8,6,4,0.78);
+      border: 1px solid rgba(201,168,76,0.22);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 3px; padding: 42px 38px;
+      opacity: 0;
+      animation: riseIn 1.4s cubic-bezier(.22,1,.36,1) 0.7s forwards;
+      position: relative; overflow: hidden;
+    }
+    .login-panel::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(140deg, rgba(201,168,76,0.05) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .p-tag {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px; font-weight: 600; letter-spacing: .32em;
+      color: #c9a84c; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .p-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px; font-weight: 400; color: #fff;
+      margin-bottom: 30px; line-height: 1.15;
+    }
+    .p-title em { font-style: italic; color: #e4c97e; }
+
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px; font-weight: 600; letter-spacing: .22em;
+      color: rgba(255,255,255,0.38); text-transform: uppercase; margin-bottom: 7px;
+    }
+    .field input {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(201,168,76,0.16); border-radius: 2px;
+      padding: 11px 14px;
+      font-family: 'Montserrat', sans-serif; font-size: 13px;
+      color: #e8dfc8; outline: none;
+      transition: border-color .22s, background .22s;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.18); }
+    .field input:focus {
+      border-color: rgba(201,168,76,0.55);
+      background: rgba(255,255,255,0.07);
+    }
+    .btn-enter {
+      width: 100%; margin-top: 8px;
+      background: #c9a84c; border: none; cursor: pointer;
+      padding: 13px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px; font-weight: 600; letter-spacing: .28em;
+      color: #0a0806; text-transform: uppercase; border-radius: 2px;
+      transition: background .2s, transform .16s, box-shadow .2s;
+      position: relative; overflow: hidden;
+    }
+    .btn-enter::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      transform: translateX(-100%); transition: transform .5s ease;
+    }
+    .btn-enter:hover { background: #e4c97e; box-shadow: 0 6px 28px rgba(201,168,76,0.32); transform: translateY(-1px); }
+    .btn-enter:hover::after { transform: translateX(100%); }
+    .btn-enter:active { transform: translateY(0); }
+
+    .err-msg {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px; color: #e07070; letter-spacing: .08em;
+      text-align: center; margin-top: 10px;
+      opacity: 0; transition: opacity .2s;
+    }
+    .err-msg.show { opacity: 1; }
+    .p-foot {
+      text-align: center; margin-top: 22px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px; color: rgba(255,255,255,0.18); letter-spacing: .14em;
+    }
+
+    @keyframes riseIn {
+      from { opacity:0; transform:translateY(26px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .shake { animation: shake .38s ease !important; }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)}
+    }
+
+    @media (max-width: 820px) {
+      html, body { overflow-y: auto; }
+      .layout { flex-direction: column; justify-content: center; padding: 90px 22px 80px; height: auto; min-height: 100vh; }
+      .branding { text-align: center; }
+      .gold-rule { margin: 22px auto; }
+      .amenities { justify-content: center; }
+      .login-panel { width: 100%; max-width: 360px; }
+      .hotel-name { font-size: 58px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── YOUR VIDEO HERE ── -->
+  <div class="video-bg">
+    <video autoplay muted loop playsinline>
+      <source src="{{ url_for('static', filename='hotel.mp4') }}" type="video/mp4">
+    </video>
+  </div>
+
+  <div class="vignette"></div>
+  <div class="corner c-tl"></div>
+  <div class="corner c-tr"></div>
+  <div class="corner c-bl"></div>
+  <div class="corner c-br"></div>
+  <div class="hline hline-top"></div>
+  <div class="hline hline-bot"></div>
+
+  <!-- ── MAIN UI ── -->
+  <div class="layout">
+
+    <!-- LEFT: Branding -->
+    <div class="branding">
+      <span class="crown-icon">♛</span>
+      <div class="est-label">Est. 2024 &nbsp;·&nbsp; Luxury Mountain Retreat </div>
+      <div class="hotel-word">Hotel</div>
+      <div class="hotel-name"><em>Aakaya</em></div>
+      <p class="tagline">"Where the Himalayas meet Heaven"</p>
+      <div class="gold-rule"></div>
+      <div class="amenities">
+        <span class="amenity">Fine Dining</span>
+        <span class="amenity">Himalayan Spa</span>
+        <span class="amenity">Mountain Suites</span>
+        <span class="amenity">Concierge</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: Login -->
+    <div class="login-panel" id="loginPanel">
+      <div class="p-tag">Admin Portal</div>
+      <div class="p-title">Welcome<br><em>back.</em></div>
+      <form method="POST" action="{{ url_for('login') }}"></form>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="uname" placeholder="Enter username" autocomplete="username"/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="upass" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+        <button class="btn-enter" type="submit" id="loginBtn">Enter Portal</button>
+        <div class="err-msg" id="errMsg">Invalid credentials. Please try again.</div>
+      </form>
+      <div class="p-foot">HOTEL AAKAYA &nbsp;·&nbsp; ADMIN ACCESS ONLY</div>
+    </div>
+
+  </div>
+
+  <script>
+    function doLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('uname').value.trim();
+      const p = document.getElementById('upass').value;
+      const panel = document.getElementById('loginPanel');
+      const err = document.getElementById('errMsg');
+      const btn = document.getElementById('loginBtn');
+
+      // ── Change 'admin' and 'admin123' to your real credentials ──
+      if (u === 'admin' && p === 'admin123') {
+        btn.textContent = 'Entering…';
+        btn.style.opacity = '0.7';
+        // ── Change 'dashboard.html' to your actual dashboard page ──
+        setTimeout(() => { window.location.href = '/dashboard'; }, 900);
+      } else {
+        panel.classList.remove('shake');
+        void panel.offsetWidth;
+        panel.classList.add('shake');
+        err.classList.add('show');
+        setTimeout(() => err.classList.remove('show'), 3000);
+      }
+    }
+  </script>
+
+</body>
+</html>

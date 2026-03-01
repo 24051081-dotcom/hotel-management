@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Room</title>
+   <link rel="stylesheet" href="{{ url_for('static', filename='hotel-luxury.css') }}">
+</head>
+<body class="container mt-5">
+
+<h2>Edit Room</h2>
+
+<form method="POST">
+    <div class="mb-3">
+        <label>Room Number</label>
+        <input type="text" class="form-control" value="{{ room.room_number }}" disabled>
+    </div>
+
+    <div class="mb-3">
+        <label>Room Type</label>
+        <input type="text" name="room_type" class="form-control" value="{{ room.room_type }}">
+    </div>
+
+    <div class="mb-3">
+        <label>Price</label>
+        <input type="text" name="price" class="form-control" value="{{ room.price }}">
+    </div>
+
+    <div class="mb-3">
+        <label>Status</label>
+        <select name="status" class="form-control">
+            <option value="Available" {% if room.status == 'Available' %}selected{% endif %}>Available</option>
+            <option value="Booked" {% if room.status == 'Booked' %}selected{% endif %}>Booked</option>
+        </select>
+    </div>
+
+    <button class="btn btn-primary">Update Room</button>
+    <a href="/view-rooms" class="btn btn-secondary">Back</a>
+</form>
+
+</body>
+</html>

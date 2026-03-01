@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bookings — Hotel AAKAYA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/hotel-luxury.css') }}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<div class="app active">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="fas fa-crown"></i></div>
+      <h2>HOTEL <span>AAKAYA</span></h2>
+      <small>Admin Portal</small>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a href="/dashboard" class="nav-item">
+        <i class="fas fa-chart-pie"></i> Dashboard
+      </a>
+      <div class="nav-section-label">Operations</div>
+      <a href="/view-rooms" class="nav-item">
+        <i class="fas fa-door-open"></i> Rooms
+      </a>
+      <a href="/view-bookings" class="nav-item active">
+        <i class="fas fa-calendar-check"></i> Bookings
+      </a>
+      <a href="/customers" class="nav-item">
+        <i class="fas fa-users"></i> Customers
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">AD</div>
+        <div class="user-info">
+          <div class="name">Admin</div>
+          <div class="role">Administrator</div>
+        </div>
+        <a href="/logout" class="logout-btn" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-title">Booking <span>Reservations</span></div>
+      <div class="topbar-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="bookingSearch" placeholder="Search bookings..." oninput="searchTable()"/>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-icon-btn"><i class="fas fa-bell"></i></button>
+      </div>
+      <div class="topbar-date" id="topbarDate"></div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-content">
+      <div class="page active">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>All <span>Bookings</span></h1>
+            <p>Manage all guest reservations</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-outline btn-sm" onclick="window.print()">
+              <i class="fas fa-download"></i> Export
+            </button>
+          </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:28px;">
+          <div class="stat-card">
+            <div class="stat-icon gold"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-value" id="totalCount">—</div>
+            <div class="stat-label">Total Bookings</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-value" id="confirmedCount">—</div>
+            <div class="stat-label">Confirmed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
+            <div class="stat-value" id="cancelledCount">—</div>
+            <div class="stat-label">Cancelled</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-rupee-sign"></i></div>
+            <div class="stat-value" id="revenueCount">—</div>
+            <div class="stat-label">Total Revenue</div>
+          </div>
+        </div>
+
+        <!-- BOOKINGS TABLE -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Booking <span>Directory</span></h3>
+            <select class="filter-select" onchange="filterByStatus(this.value)">
+              <option value="all">All Status</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+
+          <div class="card-body" style="padding:0;">
+            {% if bookings %}
+            <div class="table-wrap">
+              <table id="bookingsTable">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for booking in bookings %}
+                  <tr data-status="{{ booking.booking_status }}">
+
+                    <td class="td-muted">#{{ booking.booking_id }}</td>
+
+                    <td>
+                      <div class="td-avatar">
+                        <div class="mini-avatar">{{ booking.name[:2].upper() }}</div>
+                        <span>{{ booking.name }}</span>
+                      </div>
+                    </td>
+
+                    <td>
+                      <i class="fas fa-door-open" style="color:var(--gold-muted);font-size:11px;margin-right:6px;"></i>
+                      Room {{ booking.room_number }}
+                    </td>
+
+                    <td class="td-muted">
+                      <i class="fas fa-calendar" style="color:var(--gold-muted);font-size:10px;margin-right:6px;"></i>
+                      {{ booking.check_in }}
+                    </td>
+
+                    <td class="td-muted">
+                      <i class="fas fa-calendar-check" style="color:var(--gold-muted);font-size:10px;margin-right:6px;"></i>
+                      {{ booking.check_out }}
+                    </td>
+
+                    <td style="font-family:var(--font-display);font-size:16px;color:var(--gold);">
+                      ₹{{ "%.2f"|format(booking.total_amount) }}
+                    </td>
+
+                    <td>
+                      {% if booking.booking_status == 'Confirmed' %}
+                        <span class="badge badge-green">
+                          <i class="fas fa-check-circle"></i> Confirmed
+                        </span>
+                      {% elif booking.booking_status == 'Cancelled' %}
+                        <span class="badge badge-red">
+                          <i class="fas fa-times-circle"></i> Cancelled
+                        </span>
+                      {% else %}
+                        <span class="badge badge-gold">
+                          <i class="fas fa-clock"></i> Pending
+                        </span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      <div style="display:flex; gap:6px;">
+                        <a href="/invoice/{{ booking.booking_id }}"
+                           class="btn btn-outline btn-icon btn-sm"
+                           title="View Invoice">
+                          <i class="fas fa-file-invoice"></i>
+                        </a>
+                        {% if booking.booking_status == 'Confirmed' %}
+                        <a href="/cancel-booking/{{ booking.booking_id }}"
+                           class="btn btn-danger btn-icon btn-sm"
+                           title="Cancel Booking"
+                           onclick="return confirm('Cancel this booking?')">
+                          <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                      </div>
+                    </td>
+
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <div style="padding:0 24px 16px;">
+              <div class="pagination">
+                <span class="pagination-info" id="tableCount">
+                  Showing {{ bookings|length }} bookings
+                </span>
+              </div>
+            </div>
+
+            {% else %}
+            <div style="text-align:center; padding:60px 20px;">
+              <div style="font-size:48px; color:var(--text-dim); margin-bottom:16px;">
+                <i class="fas fa-calendar-times"></i>
+              </div>
+              <p style="font-family:var(--font-display); font-size:24px; font-weight:300; color:var(--text-muted); letter-spacing:2px;">
+                No Bookings Yet
+              </p>
+              <p style="font-size:12px; color:var(--text-dim); margin-top:8px;">
+                Bookings will appear here once guests make reservations.
+              </p>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Topbar date ──
+  const d = new Date();
+  document.getElementById('topbarDate').textContent =
+    d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+
+  // ── Stat cards ──
+  window.addEventListener('load', () => {
+    const rows = document.querySelectorAll('#bookingsTable tbody tr');
+    let confirmed = 0, cancelled = 0, revenue = 0;
+    rows.forEach(row => {
+      const status = row.dataset.status;
+      if (status === 'Confirmed') confirmed++;
+      if (status === 'Cancelled') cancelled++;
+      const amt = row.cells[5]?.textContent.replace('₹','').replace(/,/g,'').trim();
+      if (amt && status === 'Confirmed') revenue += parseFloat(amt) || 0;
+    });
+    document.getElementById('totalCount').textContent     = rows.length;
+    document.getElementById('confirmedCount').textContent = confirmed;
+    document.getElementById('cancelledCount').textContent = cancelled;
+    document.getElementById('revenueCount').textContent   = '₹' + revenue.toLocaleString('en-IN');
+  });
+
+  // ── Live search ──
+  function searchTable() {
+    const query = document.getElementById('bookingSearch').value.toLowerCase();
+    const rows  = document.querySelectorAll('#bookingsTable tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+      const show = row.textContent.toLowerCase().includes(query);
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    document.getElementById('tableCount').textContent = `Showing ${visible} booking${visible !== 1 ? 's' : ''}`;
+  }
+
+  // ── Filter by status ──
+  function filterByStatus(val) {
+    const rows = document.querySelectorAll('#bookingsTable tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+      const show = val === 'all' || row.dataset.status === val;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    document.getElementById('tableCount').textContent = `Showing ${visible} booking${visible !== 1 ? 's' : ''}`;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Rooms</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Luxury CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hotel-luxury.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+
+
+
+<body>
+
+<div class="app active">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-crown"></i></div>
+    <h2>HOTEL <span>AAKAYA</span></h2>
+    <small>Admin Portal</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <a href="/dashboard" class="nav-item">
+      <i class="fas fa-chart-pie"></i> Dashboard
+    </a>
+    <div class="nav-section-label">Operations</div>
+    <a href="/view-rooms" class="nav-item active">
+      <i class="fas fa-door-open"></i> Rooms
+    </a>
+    <a href="/view-bookings" class="nav-item">
+      <i class="fas fa-calendar-check"></i> Bookings
+    </a>
+    <a href="/customers" class="nav-item">
+      <i class="fas fa-users"></i> Customers
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div class="user-info">
+        <div class="name">Admin</div>
+        <div class="role">Administrator</div>
+      </div>
+      <a href="/logout" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
+</aside>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="topbar">
+            <div class="topbar-title">
+                Rooms <span>Collection</span>
+            </div>
+        </div>
+
+        <div class="page-content">
+
+            <div class="page active">
+
+                <div class="page-header">
+                    <div class="page-header-left">
+                        <h1>All <span>Rooms</span></h1>
+                        <p>Manage your hotel rooms</p>
+                    </div>
+
+                    <div class="page-header-actions">
+                        <a href="/add-room" class="btn btn-gold">+ Add Room</a>
+                    </div>
+                </div>
+                <div class="table-toolbar">
+
+    <div class="search-box">
+        <i>🔍</i>
+        <input type="text" id="roomSearch" placeholder="Search rooms...">
+    </div>
+
+    <select class="filter-select" id="statusFilter">
+        <option value="All">All</option>
+        <option value="Available">Available</option>
+        <option value="Booked">Booked</option>
+    </select>
+
+</div>
+
+
+                <!-- ROOMS GRID -->
+                <div class="rooms-grid">
+
+                    {% for room in rooms %}
+
+                    <div class="room-card">
+
+                        <!-- ROOM IMAGE -->
+                        <div class="room-card-img">
+                            {% if room.image %}
+<div class="room-img-bg"
+     style="background-image: url('{{ url_for('static', filename='uploads/' + room.image) }}');">
+</div>
+{% else %}
+<div class="room-img-bg room-bg-1"></div>
+{% endif %}
+
+
+                            
+
+                            <div class="room-status">
+                                {% if room.status == 'Available' %}
+                                    <span class="badge badge-green">Available</span>
+                                {% else %}
+                                    <span class="badge badge-red">Booked</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- ROOM BODY -->
+                        <div class="room-card-body">
+
+                            <div class="room-type">
+                                {{ room.room_type }}
+                            </div>
+
+                            <div class="room-features">
+                                <span>🛏 Luxury Bed</span>
+                                <span>📶 Free WiFi</span>
+                                <span>📺 Smart TV</span>
+                            </div>
+
+                            <div class="room-card-footer">
+                                <div class="room-price">
+                                    ₹ {{ room.price }} <small>/night</small>
+                                </div>
+
+                                <div style="display:flex; gap:8px;">
+                                    <a href="/edit-room/{{ room.room_id }}" class="btn btn-sm btn-outline">Edit</a>
+                                    <a href="/delete-room/{{ room.room_id }}" class="btn btn-sm btn-danger">Delete</a>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="modal-overlay" id="roomModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Room <span>Details</span></h3>
+            <button class="modal-close" onclick="closeModal()">✖</button>
+        </div>
+        <div class="modal-body" id="modalContent">
+        </div>
+    </div>
+</div> 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // ===== SEARCH + FILTER =====
+    const searchInput = document.getElementById("roomSearch");
+    const filterSelect = document.getElementById("statusFilter");
+
+    if(searchInput && filterSelect){
+        searchInput.addEventListener("keyup", filterRooms);
+        filterSelect.addEventListener("change", filterRooms);
+    }
+
+    function filterRooms() {
+        const searchValue = searchInput.value.toLowerCase();
+        const filterValue = filterSelect.value;
+
+        document.querySelectorAll(".room-card").forEach(card => {
+            const text = card.innerText.toLowerCase();
+            const status = card.querySelector(".badge").innerText;
+
+            let matchSearch = text.includes(searchValue);
+            let matchFilter = (filterValue === "All" || status === filterValue);
+
+            card.style.display = (matchSearch && matchFilter) ? "block" : "none";
+        });
+    }
+
+    // ===== MODAL CLICK =====
+    document.querySelectorAll(".room-card").forEach(card => {
+        card.addEventListener("click", function(e){
+
+            if(e.target.tagName === "A") return;
+
+            const content = this.innerHTML;
+            document.getElementById("modalContent").innerHTML = content;
+            document.getElementById("roomModal").classList.add("open");
+        });
+    });
+
+});
+
+// Close modal
+function closeModal(){
+    document.getElementById("roomModal").classList.remove("open");
+}
+</script>
+
+</body>
+</html>

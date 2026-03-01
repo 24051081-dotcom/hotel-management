@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customers — Hotel AAKAYA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/hotel-luxury.css') }}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<div class="app active">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="fas fa-crown"></i></div>
+      <h2>HOTEL <span>AAKAYA</span></h2>
+      <small>Admin Panel</small>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a href="/dashboard" class="nav-item">
+        <i class="fas fa-chart-pie"></i> Dashboard
+      </a>
+
+      <div class="nav-section-label">Management</div>
+      <a href="/view-rooms" class="nav-item">
+        <i class="fas fa-door-open"></i> Rooms
+      </a>
+      <a href="/view-bookings" class="nav-item">
+        <i class="fas fa-calendar-check"></i> Bookings
+      </a>
+      <a href="/customers" class="nav-item active">
+        <i class="fas fa-users"></i> Customers
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">AD</div>
+        <div class="user-info">
+          <div class="name">Admin</div>
+          <div class="role">Administrator</div>
+        </div>
+        <a href="/logout" class="logout-btn" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-title">Customer <span>Management</span></div>
+      <div class="topbar-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="customerSearch" placeholder="Search customers..." oninput="searchTable()"/>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-icon-btn" title="Notifications">
+          <i class="fas fa-bell"></i>
+        </button>
+      </div>
+      <div class="topbar-date" id="topbarDate"></div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-content">
+      <div class="page active">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>All <span>Customers</span></h1>
+            <p>Registered hotel guests</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-outline btn-sm" onclick="window.print()">
+              <i class="fas fa-download"></i> Export
+            </button>
+          </div>
+        </div>
+
+        <!-- STAT STRIP -->
+        <div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom:28px;">
+          <div class="stat-card">
+            <div class="stat-icon gold"><i class="fas fa-users"></i></div>
+            <div class="stat-value">{{ customers | length }}</div>
+            <div class="stat-label">Total Customers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-value">
+              {{ customers | selectattr('total_bookings', 'gt', 0) | list | length }}
+            </div>
+            <div class="stat-label">Active Guests</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-star"></i></div>
+            <div class="stat-value">
+              {{ customers | selectattr('total_bookings', 'ge', 3) | list | length }}
+            </div>
+            <div class="stat-label">VIP Guests (3+ Bookings)</div>
+          </div>
+        </div>
+
+        <!-- CUSTOMERS TABLE -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Customer <span>Directory</span></h3>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <select class="filter-select" onchange="filterByBookings(this.value)">
+                <option value="all">All Guests</option>
+                <option value="vip">VIP (3+ bookings)</option>
+                <option value="active">Active (1+ bookings)</option>
+                <option value="new">New (0 bookings)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card-body" style="padding:0;">
+
+            {% if customers %}
+            <div class="table-wrap">
+              <table id="customerTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Total Bookings</th>
+                    <th>Guest Type</th>
+                    <th>Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for c in customers %}
+                  <tr data-bookings="{{ c.total_bookings }}">
+
+                    <!-- ID -->
+                    <td class="td-muted">#{{ c.customer_id }}</td>
+
+                    <!-- Name with avatar initials -->
+                    <td>
+                      <div class="td-avatar">
+                        <div class="mini-avatar">
+                          {{ c.name[:2].upper() }}
+                        </div>
+                        <div>
+                          <div>{{ c.name }}</div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Phone -->
+                    <td class="td-muted">
+                      <i class="fas fa-phone" style="color:var(--gold-muted);font-size:10px;margin-right:6px;"></i>
+                      {{ c.phone if c.phone else '—' }}
+                    </td>
+
+                    <!-- Email -->
+                    <td class="td-muted">
+                      <i class="fas fa-envelope" style="color:var(--gold-muted);font-size:10px;margin-right:6px;"></i>
+                      {{ c.email if c.email else '—' }}
+                    </td>
+
+                    <!-- Total Bookings -->
+                    <td>
+                      {% if c.total_bookings >= 3 %}
+                        <span class="badge badge-gold">{{ c.total_bookings }} Bookings</span>
+                      {% elif c.total_bookings >= 1 %}
+                        <span class="badge badge-green">{{ c.total_bookings }} Bookings</span>
+                      {% else %}
+                        <span class="badge badge-muted">0 Bookings</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- Guest Type -->
+                    <td>
+                      {% if c.total_bookings >= 3 %}
+                        <span class="badge badge-gold"><i class="fas fa-crown"></i> VIP</span>
+                      {% elif c.total_bookings >= 1 %}
+                        <span class="badge badge-blue">Regular</span>
+                      {% else %}
+                        <span class="badge badge-muted">New</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- Joined date — show only date part -->
+                    <td class="td-muted">
+                      {{ c.created_at.strftime('%d %b %Y') if c.created_at else '—' }}
+                    </td>
+
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination info -->
+            <div style="padding: 0 24px 16px;">
+              <div class="pagination">
+                <span class="pagination-info" id="tableCount">
+                  Showing {{ customers | length }} customers
+                </span>
+              </div>
+            </div>
+
+            {% else %}
+            <!-- Empty state -->
+            <div style="text-align:center; padding: 60px 20px;">
+              <div style="font-size:48px; color:var(--text-dim); margin-bottom:16px;">
+                <i class="fas fa-users"></i>
+              </div>
+              <p style="font-family:var(--font-display); font-size:24px; font-weight:300; color:var(--text-muted); letter-spacing:2px;">
+                No Customers Yet
+              </p>
+              <p style="font-size:12px; color:var(--text-dim); margin-top:8px;">
+                Customers will appear here once they register.
+              </p>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ████████  SCRIPTS  ████████ -->
+<script>
+  // ── Topbar date ──
+  const d = new Date();
+  document.getElementById('topbarDate').textContent =
+    d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+
+  // ── Live search ──
+  function searchTable() {
+    const query = document.getElementById('customerSearch').value.toLowerCase();
+    const rows  = document.querySelectorAll('#customerTable tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const show = text.includes(query);
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    document.getElementById('tableCount').textContent = `Showing ${visible} customer${visible !== 1 ? 's' : ''}`;
+  }
+
+  // ── Filter by booking type ──
+  function filterByBookings(val) {
+    const rows = document.querySelectorAll('#customerTable tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+      const bookings = parseInt(row.dataset.bookings || 0);
+      let show = true;
+      if (val === 'vip')    show = bookings >= 3;
+      if (val === 'active') show = bookings >= 1;
+      if (val === 'new')    show = bookings === 0;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    document.getElementById('tableCount').textContent = `Showing ${visible} customer${visible !== 1 ? 's' : ''}`;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice</title>
+   <link rel="stylesheet" href="{{ url_for('static', filename='hotel-luxury.css') }}">
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="card p-4 shadow">
+
+        <h2 class="text-center mb-4">Hotel Invoice</h2>
+
+        <hr>
+
+        <h5>Customer Details</h5>
+        <p><strong>Name:</strong> {{ booking.name }}</p>
+        <p><strong>Phone:</strong> {{ booking.phone }}</p>
+
+        <hr>
+
+        <h5>Room Details</h5>
+        <p><strong>Room Number:</strong> {{ booking.room_number }}</p>
+        <p><strong>Room Type:</strong> {{ booking.room_type }}</p>
+
+        <hr>
+
+        <h5>Booking Details</h5>
+        <p><strong>Check-in:</strong> {{ booking.check_in }}</p>
+        <p><strong>Check-out:</strong> {{ booking.check_out }}</p>
+        <p><strong>Status:</strong> {{ booking.booking_status }}</p>
+
+        <hr>
+
+        <h4 class="text-end">Total: ₹ {{ booking.total_amount }}</h4>
+
+        <div class="text-center mt-4">
+            <button onclick="window.print()" class="btn btn-success">
+                🖨 Print Invoice
+            </button>
+            <a href="/view-bookings" class="btn btn-secondary">Back</a>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

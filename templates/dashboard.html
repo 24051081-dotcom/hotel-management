@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Luxury CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hotel-luxury.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+
+<body>
+
+<div class="app active">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon"><i class="fas fa-crown"></i></div>
+            <h2>HOTEL <span>AAKAYA</span></h2>
+            <small>Admin Portal</small>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Overview</div>
+
+            <a href="{{ url_for('dashboard') }}" 
+               class="nav-item {% if tab == 'home' %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </a>
+
+            <div class="nav-section-label">Operations</div>
+
+            <a href="{{ url_for('dashboard', tab='rooms') }}" 
+               class="nav-item {% if tab == 'rooms' %}active{% endif %}">
+                <i class="fas fa-door-open"></i> Rooms
+            </a>
+
+            <a href="{{ url_for('dashboard', tab='new-booking') }}" 
+               class="nav-item {% if tab == 'new-booking' %}active{% endif %}">
+                <i class="fas fa-calendar-plus"></i> New Booking
+            </a>
+
+            <a href="/view-bookings" class="nav-item">
+                <i class="fas fa-calendar-check"></i> Bookings
+            </a>
+
+            <a href="/customers" class="nav-item">
+                <i class="fas fa-users"></i> Customers
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="avatar">AD</div>
+                <div class="user-info">
+                    <div class="name">Admin</div>
+                    <div class="role">Administrator</div>
+                </div>
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="topbar">
+            <div class="topbar-title">
+                Dashboard <span>Overview</span>
+            </div>
+        </div>
+
+        <div class="page-content">
+            <div class="page active">
+
+                {% if tab == 'home' %}
+
+                <!-- DASHBOARD OVERVIEW -->
+                <div class="page-header">
+                    <div>
+                        <h1>Welcome <span>Admin</span> 👋</h1>
+                        <p>Here’s today’s overview</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-icon gold">₹</div>
+                        <div class="stat-value">₹ {{ revenue }}</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon blue">🛏</div>
+                        <div class="stat-value">{{ total_rooms }}</div>
+                        <div class="stat-label">Total Rooms</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon green">✔</div>
+                        <div class="stat-value">{{ available_rooms }}</div>
+                        <div class="stat-label">Available Rooms</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon red">⛔</div>
+                        <div class="stat-value">{{ booked_rooms }}</div>
+                        <div class="stat-label">Booked Rooms</div>
+                    </div>
+
+                </div>
+
+                <div class="card" style="margin-top:40px;">
+                    <div class="card-header">
+                        <h3>Revenue <span>Overview</span></h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                {% elif tab == 'rooms' %}
+
+                <!-- ROOMS TAB -->
+                <div class="page-header">
+                    <h1>All <span>Rooms</span></h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <table style="width:100%; border-collapse: collapse;">
+                            <tr style="color:#c9a84c;">
+                                <th>Room No</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                            </tr>
+
+                            {% for room in rooms %}
+                            <tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                                <td>{{ room.room_number }}</td>
+                                <td>{{ room.room_type }}</td>
+                                <td>₹ {{ room.price }}</td>
+                                <td>{{ room.status }}</td>
+                            </tr>
+                            {% endfor %}
+
+                        </table>
+                    </div>
+                </div>
+
+                {% elif tab == 'new-booking' %}
+
+                <!-- NEW BOOKING TAB -->
+                <div class="page-header">
+                    <h1>Create <span>New Booking</span></h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" action="/admin-booking">
+
+                            <div style="margin-bottom:15px;">
+                                <label>Customer</label>
+                               <input type="text" name="name" required>
+</div>
+
+<div style="margin-bottom:15px;">
+    <label>Phone</label>
+    <input type="text" name="phone" required>
+</div>
+
+<div style="margin-bottom:15px;">
+    <label>Email</label>
+    <input type="email" name="email">
+                            </div>
+
+                            <div style="margin-bottom:15px;">
+                                <label>Room</label>
+                                <select name="room_id" required>
+                                    {% for room in rooms %}
+                                        <option value="{{ room.room_id }}">
+                                            Room {{ room.room_number }} (₹ {{ room.price }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom:15px;">
+                                <label>Check In</label>
+                                <input type="date" name="check_in" required>
+                            </div>
+
+                            <div style="margin-bottom:15px;">
+                                <label>Check Out</label>
+                                <input type="date" name="check_out" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-gold">
+                                Confirm Booking
+                            </button>
+
+                        </form>
+                    </div>
+                </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if tab == 'home' %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const canvas = document.getElementById('revenueChart');
+
+if (canvas) {
+    new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: {{ room_labels | tojson }},
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: {{ revenue_values | tojson }},
+                backgroundColor: 'rgba(201,168,76,0.5)',
+                borderColor: 'rgba(201,168,76,1)',
+                borderWidth: 1
+            }]
+        }
+    });
+}
+</script>
+{% endif %}
+
+</body>
+</html>

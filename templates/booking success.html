@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Confirmed</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='hotel-luxury.css') }}">
+</head>
+<body>
+
+<div class="container mt-5 text-center">
+
+    <div class="card shadow p-4">
+        <h2 class="text-success">🎉 Booking Confirmed!</h2>
+        <hr>
+
+        <p><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
+        <p><strong>Customer Name:</strong> {{ booking.name }}</p>
+        <p><strong>Room Number:</strong> {{ booking.room_number }}</p>
+        <p><strong>Check-in:</strong> {{ booking.check_in }}</p>
+        <p><strong>Check-out:</strong> {{ booking.check_out }}</p>
+        <p><strong>Total Amount:</strong> ₹ {{ booking.total_amount }}</p>
+
+        <div class="mt-4">
+            <a href="/invoice/{{ booking.booking_id }}" class="btn btn-primary">
+                Download Invoice
+            </a>
+
+            <a href="/" class="btn btn-secondary">
+                Back to Home
+            </a>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
